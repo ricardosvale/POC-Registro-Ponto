@@ -11,6 +11,7 @@
 		21079B462C6F99CA0006ED09 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21079B452C6F99CA0006ED09 /* ContentView.swift */; };
 		21079B482C6F99CB0006ED09 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 21079B472C6F99CB0006ED09 /* Assets.xcassets */; };
 		21079B4B2C6F99CB0006ED09 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 21079B4A2C6F99CB0006ED09 /* Preview Assets.xcassets */; };
+		21079B532C6F9A0C0006ED09 /* PointRegister.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21079B522C6F9A0C0006ED09 /* PointRegister.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -20,6 +21,7 @@
 		21079B472C6F99CB0006ED09 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		21079B4A2C6F99CB0006ED09 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		21079B4C2C6F99CB0006ED09 /* POC_Registro_Ponto.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = POC_Registro_Ponto.entitlements; sourceTree = "<group>"; };
+		21079B522C6F9A0C0006ED09 /* PointRegister.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PointRegister.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -57,6 +59,7 @@
 				21079B472C6F99CB0006ED09 /* Assets.xcassets */,
 				21079B4C2C6F99CB0006ED09 /* POC_Registro_Ponto.entitlements */,
 				21079B492C6F99CB0006ED09 /* Preview Content */,
+				21079B522C6F9A0C0006ED09 /* PointRegister.swift */,
 			);
 			path = "POC-Registro-Ponto";
 			sourceTree = "<group>";
@@ -139,6 +142,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				21079B532C6F9A0C0006ED09 /* PointRegister.swift in Sources */,
 				21079B462C6F99CA0006ED09 /* ContentView.swift in Sources */,
 				21079B442C6F99CA0006ED09 /* POC_Registro_PontoApp.swift in Sources */,
 			);
