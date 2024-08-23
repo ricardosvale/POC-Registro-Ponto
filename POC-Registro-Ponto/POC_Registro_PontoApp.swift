@@ -11,7 +11,7 @@ import SwiftUI
 struct POC_Registro_PontoApp: App {
     var body: some Scene {
         WindowGroup {
-            PointRegister()
+            PointView()
         }
     }
 }

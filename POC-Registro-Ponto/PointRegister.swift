@@ -8,267 +8,168 @@
 import SwiftUI
 
 struct PointRegister: View {
-    @State private var date = Date() {
-        didSet {
-            updateDateInfo()
-            checkAdvanceButtonState()
-        }
-    }
+    @EnvironmentObject private var viewmodel: PointRegisterModelView
     
-    @State private var dayOfWeek = ""
-    @State private var formattedDate = ""
-    @State private var dataInicial: Date?
-    @State private var dataFinal: Date?
-    @State private var totalHorasEMinutos = ""
-    @State private var dataEntrada = ""
-    @State private var horaEntrada = ""
-    @State private var dataSaida = ""
-    @State private var horaSaida = ""
-    @State private var stateButton: (btEntrada: Bool, btSaida: Bool, btAvancar: Bool, stSaida: Bool) = (false, true, true, false)
-    
-    var timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
     var body: some View {
-        VStack (alignment: .center){
-            HStack (alignment: .center) {
-                Button(action: {
-                    if let previousDate = Calendar.current.date(byAdding: .day, value: -1, to: date) {
-                        let calendar = Calendar.current
-                        var components = calendar.dateComponents([.year, .month, .day, .hour, .minute, .second], from: previousDate)
-                        components.hour = calendar.component(.hour, from: date)
-                        components.minute = calendar.component(.minute, from: date)
-                        components.second = calendar.component(.second, from: date)
-                        date = calendar.date(from: components) ?? date
+        VStack {
+            VStack (alignment: .leading){
+                //Registro de Ponto
+                //Botão de Entrada
+                HStack (alignment: .center){
+                    Button(action: {
+                        viewmodel.dataInicial = Date()
+                        guard let dataInicial = viewmodel.dataInicial else { return }
+                        viewmodel.dataEntrada = String(" \(viewmodel.formatDatePonto(date: dataInicial))")
+                        viewmodel.horaEntrada = String(viewmodel.formatHourPonto(date: dataInicial))
+                        viewmodel.stateButton.btEntrada.toggle()
+                        viewmodel.stateButton.btSaida = false
+                        
+                   }) {
+                        Rectangle()
+                            .foregroundColor(viewmodel.stateButton.btEntrada ? Color.gray : Color.blue)
+                            .frame(width: 90, height: 100)
+                            .cornerRadius(10)
+                            .overlay(
+                                Image(systemName: "figure.walk.arrival")
+                                    .resizable()
+                                    .scaledToFit()
+                                    .padding()
+                            )
+                        
+                            .accessibilityLabel("Botão de Registro de Entrada")
+                            .accessibilityHint(viewmodel.stateButton.btEntrada ? "Ponto de Entrada já registrado" : "Clique para registrar o ponto de entrada")
                     }
-                    stateButton.btAvancar = false
-                }) {
-                    Image( systemName: "chevron.left")
-                        .padding(.leading, 70)
-                        .font(.system(size: 50, weight: .semibold))
-                        .foregroundColor(.blue)
-                        .background(.white)
-                        .frame(width: 40, height: 20)
-                }
-                .buttonStyle(PlainButtonStyle())
-                
-                Spacer()
-                
-                VStack (alignment: .center) {
-                    Text(dayOfWeek.capitalized)
-                        .font(.title)
-                        .fontWeight(.semibold)
-                        .multilineTextAlignment(.center)
-                        .padding(.bottom, 5)
-                        .foregroundColor(.black)
+                    .accessibilityRemoveTraits(.isButton)
+                    .buttonStyle(PlainButtonStyle())
+                    .disabled(viewmodel.stateButton.btEntrada)
                     
                     
-                    Text(formattedDate)
-                        .font(.title)
-                        .fontWeight(.semibold)
-                        .multilineTextAlignment(.center)
-                        .foregroundColor(.black)
-                        .padding(.leading, 30)
-                }
-                
-                Spacer()
-                
-                Button(action: {
-                    if let nextDate = Calendar.current.date(byAdding: .day, value: 1, to: date), nextDate <= Date() {
-                        date = nextDate
+                    // Bloco de informações de entrada
+                    
+                    VStack (alignment: .leading){
+                        Text(viewmodel.stateButton.btEntrada ? "Ponto de Entrada Registrado" : "Ponto de Entrada")
+                            .font(.title)
+                            .foregroundColor(.white)
+                            .accessibilityLabel(viewmodel.stateButton.btEntrada ? "Status do Ponto de Entrada: Registrado" : "Status do Ponto de Entrada: Não Registrado")
+                            .accessibilityRemoveTraits(.isStaticText)
+                        
+                        HStack{
+                            Label("-", systemImage: "calendar")
+                                .font(.title)
+                                .foregroundColor(viewmodel.stateButton.btEntrada ? Color.white : Color.blue)
+                            Text(viewmodel.dataEntrada)
+                                .foregroundColor(.white)
+                                .font(.title3)
+                                .fontWeight(.ultraLight)
+                            Label("-", systemImage: "clock")
+                                .font(.title3)
+                                .foregroundColor(viewmodel.stateButton.btEntrada ? Color.white : Color.blue)
+                            Text(viewmodel.horaEntrada)
+                                .foregroundColor(.white)
+                                .font(.title3)
+                                .fontWeight(.ultraLight)
+                        }
+                        .accessibilityElement(children: .combine)
+                        .accessibilityLabel("Informações de Entrada")
+                        .accessibilityValue("Data: \(viewmodel.dataEntrada), Hora: \(viewmodel.horaEntrada)")
+                        .accessibilityRemoveTraits(.isStaticText)
                     }
-                }) {
-                    Image( systemName: "chevron.right")
-                        .font(.system(size: 50, weight: .semibold))
-                        .foregroundColor(.blue)
-                        .frame(width: 40, height: 20)
+                    .padding()
+                    .background(viewmodel.stateButton.btEntrada ? Color.gray : Color.blue)
+                    .opacity(viewmodel.stateButton.btEntrada ? 0.8 : 1.0)
+                    .cornerRadius(10)
+                    .padding()
                 }
-                .buttonStyle(PlainButtonStyle())
-                .disabled(stateButton.btAvancar)
+                .padding(.leading, 40)
+                // Bater Ponto de Saída
+                //Botão de Saída
+                HStack{
+                    
+                    Button(action: {
+                                viewmodel.dataFinal = Date()
+                                guard let dataFinal = viewmodel.dataFinal else { return }
+                                viewmodel.dataSaida = String("\(viewmodel.formatDatePonto(date: dataFinal))")
+                                viewmodel.horaSaida = String(viewmodel.formatHourPonto(date: dataFinal))
+                                viewmodel.stateButton.btSaida.toggle()
+                                viewmodel.totalHorasEMinutos = viewmodel.calculateTimeDifference(start: viewmodel.dataInicial!, end: dataFinal)
+                                viewmodel.stateButton.stSaida = true
+                   }) {
+                        Rectangle()
+                            .foregroundColor(viewmodel.stateButton.btSaida ? Color.gray : Color.blue )
+                            .frame(width: 90, height: 100)
+                            .cornerRadius(10)
+                            .overlay(
+                                Image( systemName:"figure.walk.departure")
+                                    .resizable()
+                                    .scaledToFit()
+                                    .padding()
+                            )
+                            .accessibilityLabel(viewmodel.stateButton.btSaida ? "Botão de Registro de Saída" : "Botão de Registro de Saída")
+                            .accessibilityHint(viewmodel.stateButton.btSaida ? "" : "Clique para registrar o ponto de saída")
+                    }
+                    .accessibilityRemoveTraits(.isButton)
+                    .buttonStyle(PlainButtonStyle())
+                    .disabled(viewmodel.stateButton.btSaida)
+                    
+                    // Bloco de informações de saida
+                    
+                    VStack (alignment: .leading){
+                        Text(viewmodel.stateButton.stSaida ? "Ponto de Saída Registrado" : "Ponto de Saída" )
+                            .font(.title)
+                            .foregroundColor(.white)
+                            .accessibilityLabel(viewmodel.stateButton.stSaida ? "Status do Ponto de Saída: Registrado " : "Status do Ponto de Saída: Não Registrado")
+                            .accessibilityRemoveTraits(.isStaticText)
+                        
+                        HStack{
+                            Label("-", systemImage: "calendar")
+                                .font(.title)
+                                .foregroundColor(viewmodel.stateButton.btSaida ? Color.white : Color.blue)
+                            Text(viewmodel.dataSaida)
+                                .foregroundColor(.white)
+                                .font(.title3)
+                                .fontWeight(.ultraLight)
+                            Label("-", systemImage: "clock")
+                                .font(.title3)
+                                .foregroundColor(viewmodel.stateButton.btSaida ? Color.white : Color.blue)
+                            Text(viewmodel.horaSaida)
+                                .foregroundColor(.white)
+                                .font(.title3)
+                                .fontWeight(.ultraLight)
+                        }
+                        .accessibilityElement(children: .combine)
+                        .accessibilityLabel("Informações de Saída")
+                        .accessibilityValue("Data: \(viewmodel.dataSaida), Hora: \(viewmodel.horaSaida)")
+                        .accessibilityRemoveTraits(.isStaticText)
+                        
+                    }
+                    .padding()
+                    .background(viewmodel.stateButton.btSaida ? Color.gray : Color.blue)
+                    .opacity(viewmodel.stateButton.btSaida ? 0.8 : 1.0)
+                    .cornerRadius(10)
+                    .padding()
+                }
+                .padding([.leading, .trailing], 40)
                 
-                Spacer()
             }
-            .padding(.top, 50)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
             
-            VStack {
-                HStack {
-                    Button(action: {
-                        dataInicial = Date()
-                        guard let dataInicial = dataInicial else { return }
-                        dataEntrada = String(" \(formatDatePonto(date: dataInicial))")
-                        horaEntrada = String(formatHourPonto(date: dataInicial))
-                        stateButton.btEntrada.toggle()
-                        stateButton.btSaida = false
-                    }) {
-                        Image( systemName: "figure.walk.departure")
-                            .font(.largeTitle)
-                            .fontWeight(.bold)
-                            .padding()
-                            .background(stateButton.btEntrada ? Color.gray : Color.blue)
-                            .foregroundColor(.white)
-                            .cornerRadius(8)
-                    }
-                    .buttonStyle(PlainButtonStyle())
-                    .disabled(stateButton.btEntrada)
-                    .padding(.trailing, 30)
-                    
-                    
-                    VStack (alignment: .leading){
-                        Text(stateButton.btEntrada ? "Ponto de Entrada Registrado"  : "Ponto de Entrada")
-                            .foregroundColor(.black)
-                            .font(.title)
-                        HStack {
-                            Label("-", systemImage: "calendar")
-                                .foregroundColor(.blue)
-                            Text(dataEntrada)
-                                .foregroundColor(.black)
-                            Label("-", systemImage: "clock")
-                                .foregroundColor(.blue)
-                            Text(horaEntrada)
-                                .foregroundColor(.black)
-                        }
-                    }
-                }
-                
-                HStack {
-                    Button(action: {
-                        dataFinal = Date()
-                        guard let dataFinal = dataFinal else { return }
-                        dataSaida = String("\(formatDatePonto(date: dataFinal))")
-                        horaSaida = String(formatHourPonto(date: dataFinal))
-                        stateButton.btSaida.toggle()
-                        totalHorasEMinutos = calculateTimeDifference(start: dataInicial!, end: dataFinal)
-                        stateButton.stSaida = true
-                    }) {
-                        Image(systemName: "figure.walk.arrival")
-                            .font(.largeTitle)
-                            .fontWeight(.bold)
-                            .padding()
-                            .background(stateButton.btSaida ? Color.gray : Color.blue)
-                            .foregroundColor(.white)
-                            .cornerRadius(8)
-                    }
-                    .buttonStyle(PlainButtonStyle())
-                    .disabled(stateButton.btSaida)
-                    .padding(.trailing, 30)
-                    
-                    VStack (alignment: .leading){
-                        Text(stateButton.stSaida ? "Ponto de Saída Registrado" : "Ponto de Saída")
-                            .foregroundColor(.black)
-                            .font(.title)
-                        HStack {
-                            Label("-", systemImage: "calendar")
-                                .foregroundColor(.blue)
-                            Text(dataSaida)
-                                .foregroundColor(.black)
-                            Label("-", systemImage: "clock")
-                                .foregroundColor(.blue)
-                            Text(horaSaida)
-                                .foregroundColor(.black)
-                        }
-                    }
-                }
-                
-                Text("Total de horas: \(totalHorasEMinutos).")
+            VStack (alignment: .leading) {
+                Text("Total de Horas: \(viewmodel.totalHorasEMinutos)")
                     .font(.title2)
-                    .foregroundColor(.black)
-                Spacer()
-                
-                
+                    .foregroundColor(.blue)
+                    .padding([.leading, .trailing], 40)
+                    .padding(.bottom, 20)
+                    .accessibilityLabel("Total de Horas Trabalhadas")
+                    .accessibilityValue("\(viewmodel.totalHorasEMinutos)")
+                    .accessibilityRemoveTraits(.isStaticText)
             }
-            .padding()
-            .frame(height: 300)
-            
-        }
-        .onAppear {
-            updateDateInfo()
-            checkAdvanceButtonState() // Verifica o estado do botão ao aparecer
-        }
-        .onReceive(timer) { _ in
-            updateTimeOnly()
-        }
-        .background(.white)
+            .frame(maxWidth: .infinity, maxHeight: .infinity,  alignment: .leading)
+       
+              
+        }.background(.white)
+            .accessibilityElement(children: .contain)
     }
     
-    
-    /// Essa função atualiza somente o horário sem alterar a data.
-    ///
-    ///Atualiza somente o horário, podendo atualizar a data sem alterar a hora atual.
-    ///
-    ///```swift
-    ///let calendar = Calendar.current
-    ///var components = calendar.dateComponents([.year, .month, .day, .hour, .minute, .second], from: date)
-    ///let currentTime = Date()
-    /// components.hour = calendar.component(.hour, from: currentTime)
-    ///components.minute = calendar.component(.minute, from: currentTime)
-    ///components.second = calendar.component(.second, from: currentTime)
-    ///date = calendar.date(from: components) ?? date
-    ///
-    ///```
-    /// - Returns: Não retorna nada
-    func updateTimeOnly() {
-        let calendar = Calendar.current
-        var components = calendar.dateComponents([.year, .month, .day, .hour, .minute, .second], from: date)
-        let currentTime = Date()
-        components.hour = calendar.component(.hour, from: currentTime)
-        components.minute = calendar.component(.minute, from: currentTime)
-        components.second = calendar.component(.second, from: currentTime)
-        date = calendar.date(from: components) ?? date
-    }
-    
-    
-    func updateDateInfo() {
-        dayOfWeek = getDayOfWeek(date: date)
-        formattedDate = formatDate(date: date)
-    }
-    
-    func checkAdvanceButtonState() {
-        let calendar = Calendar.current
-        let currentDate = calendar.startOfDay(for: Date())
-        let displayedDate = calendar.startOfDay(for: date)
-        
-        // Atualiza o estado do botão com base na comparação das datas
-        stateButton.btAvancar = displayedDate == currentDate
-    }
-    
-    func getDayOfWeek(date: Date) -> String {
-        let dateFormatter = DateFormatter()
-        dateFormatter.locale = Locale(identifier: "pt_BR")
-        dateFormatter.dateFormat = "EEEE"
-        return dateFormatter.string(from: date)
-    }
-    
-    func formatDate(date: Date) -> String {
-        let dateFormatter = DateFormatter()
-        dateFormatter.locale = Locale(identifier: "pt-BR")
-        dateFormatter.dateStyle = .medium
-        dateFormatter.timeStyle = .medium
-        return dateFormatter.string(from: date)
-    }
-    
-    func formatDatePonto(date: Date) -> String {
-        let dateFormatter = DateFormatter()
-        dateFormatter.locale = Locale(identifier: "pt-BR")
-        dateFormatter.dateStyle = .full
-        dateFormatter.dateFormat = "EEE dd 'de' MMMM"
-        return dateFormatter.string(from: date)
-    }
-    
-    func formatHourPonto(date: Date) -> String {
-        let dateFormatter = DateFormatter()
-        dateFormatter.locale = Locale(identifier: "pt-BR")
-        dateFormatter.dateStyle = .none
-        dateFormatter.timeStyle = .short
-        return dateFormatter.string(from: date)
-    }
-    
-    func calculateTimeDifference(start: Date, end: Date) -> String {
-        let difference = Calendar.current.dateComponents([.hour, .minute], from: start, to: end)
-        let hours = difference.hour ?? 0
-        let minutes = difference.minute ?? 0
-        return "\(hours) horas e \(minutes) minutos"
-    }
 }
 
 
-#Preview {
-    PointRegister()
-}
